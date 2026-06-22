@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>كلف</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-title" content="كلف">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --bg:       #F7F8FA;
+  --bg2:      #FFFFFF;
+  --bg3:      #F0F2F5;
+  --card:     #FFFFFF;
+  --gold:     #D4A017;
+  --gold2:    #E8B84B;
+  --gold-bg:  #FDF6E3;
+  --gold-light: #FFF8E7;
+  --accent:   #1A1A2E;
+  --accent2:  #2D2D50;
+  --green:    #1DB954;
+  --green-bg: #E8F8EE;
+  --red:      #E53E3E;
+  --red-bg:   #FEF0F0;
+  --orange:   #F6861F;
+  --orange-bg:#FEF3E8;
+  --blue:     #3B82F6;
+  --blue-bg:  #EFF6FF;
+  --text:     #1A1A2E;
+  --text2:    #6B7280;
+  --text3:    #9CA3AF;
+  --border:   #E5E7EB;
+  --border2:  #F3F4F6;
+  --shadow:   0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md:0 4px 16px rgba(0,0,0,0.10);
+  --shadow-gold: 0 4px 20px rgba(212,160,23,0.25);
+  --radius:   16px;
+  --radius-sm:10px;
+  --radius-xs:6px;
+}
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+body {
+  font-family:'Tajawal',sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height:100vh;
+  max-width:430px;
+  margin:0 auto;
+  overflow-x:hidden;
+}
+::-webkit-scrollbar { width:3px; }
+::-webkit-scrollbar-thumb { background:var(--gold2); border-radius:3px; }
+
+/* ── TOP BAR ── */
+.topbar {
+  position:sticky; top:0; z-index:100;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 20px 12px;
+  display:flex; align-items:center; justify-content:space-between;
+}
+.logo { display:flex; align-items:center; gap:10px; }
+.logo-icon {
+  width:40px; height:40px;
+  background: linear-gradient(135deg, var(--gold), var(--gold2));
+  border-radius:12px;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow: var(--shadow-gold);
+  position:relative; overflow:hidden;
+}
+.logo-icon::after {
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,0.3),transparent);
+}
+.logo-text { font-size:26px; font-weight:900; color:var(--accent); letter-spacing:-0.5px; }
+.logo-text span { color:var(--gold); }
+.dev-badge {
+  font-size:10px; color:var(--text2);
+  background:var(--bg3); border:1px solid var(--border);
+  padding:3px 10px; border-radius:20px; font-weight:600;
+}
+
+/* ── PAGES ── */
+.page { display:none; padding:0 16px 90px; animation:fadeUp 0.28s ease; }
+.page.active { display:block; }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(10px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position:fixed; bottom:0; left:50%; transform:translateX(-50%);
+  width:100%; max-width:430px;
+  background:#fff; border-top:1px solid var(--border);
+  display:flex; z-index:100; padding:8px 0 16px;
+}
+.nav-item {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; gap:3px; cursor:pointer;
+  transition:all 0.2s; padding:4px 0;
+}
+.nav-item span { font-size:11px; font-weight:600; color:var(--text3); transition:color 0.2s; }
+.nav-item.active span { color:var(--gold); }
+.nav-icon { position:relative; }
+.nav-icon svg { width:22px; height:22px; transition:all 0.2s; }
+.nav-dot {
+  position:absolute; top:-2px; left:-2px;
+  width:7px; height:7px; border-radius:50%;
+  background:var(--gold); border:2px solid #fff;
+  display:none;
+}
+
+/* ── FAB ── */
+.fab {
+  position:fixed; bottom:72px; left:50%; transform:translateX(-50%) translateX(-20px);
+  width:52px; height:52px; border-radius:16px;
+  background:linear-gradient(135deg, var(--gold), var(--gold2));
+  border:none; cursor:pointer; color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  box-shadow:var(--shadow-gold); z-index:99; transition:all 0.2s;
+}
+.fab:active { transform:translateX(-50%) translateX(-20px) scale(0.92); }
+
+/* ── SEARCH ── */
+.search-wrap { margin:14px 0 12px; position:relative; }
+.search-wrap svg { position:absolute; right:14px; top:50%; transform:translateY(-50%); width:17px; height:17px; color:var(--text3); }
+.search-input {
+  width:100%; background:var(--card);
+  border:1.5px solid var(--border); border-radius:var(--radius);
+  padding:11px 42px 11px 14px;
+  color:var(--text); font-family:'Tajawal',sans-serif;
+  font-size:14px; outline:none; transition:border-color 0.2s;
+  box-shadow:var(--shadow);
+}
+.search-input:focus { border-color:var(--gold); }
+.search-input::placeholder { color:var(--text3); }
+
+/* ── CHIPS ── */
+.chips { display:flex; gap:8px; overflow-x:auto; padding-bottom:4px; margin-bottom:14px; }
+.chips::-webkit-scrollbar { display:none; }
+.chip {
+  padding:7px 16px; border-radius:20px; white-space:nowrap;
+  font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s;
+  border:1.5px solid var(--border); color:var(--text2); background:var(--card);
+  flex-shrink:0; box-shadow:var(--shadow);
+}
+.chip.active { background:var(--gold); color:#fff; border-color:var(--gold); box-shadow:var(--shadow-gold); }
+
+/* ── STATS ── */
+.stats-row { display:flex; gap:10px; margin-bottom:16px; }
+.stat-card {
+  flex:1; background:var(--card); border:1.5px solid var(--border);
+  border-radius:var(--radius); padding:14px 10px; text-align:center;
+  box-shadow:var(--shadow); position:relative; overflow:hidden;
+}
+.stat-card::after {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  background:var(--bar-color, var(--gold));
+}
+.stat-card .s-val { font-size:18px; font-weight:900; color:var(--bar-color,var(--gold)); display:block; margin-bottom:3px; }
+.stat-card .s-lbl { font-size:10px; color:var(--text2); font-weight:600; }
+
+/* ── SEC TITLE ── */
+.sec-title { font-size:12px; font-weight:800; color:var(--text2); text-transform:uppercase; letter-spacing:1.2px; margin:18px 0 10px; }
+
+/* ── LAPTOP CARD ── */
+.laptop-card {
+  background:var(--card); border:1.5px solid var(--border);
+  border-radius:var(--radius); padding:16px;
+  margin-bottom:12px; cursor:pointer;
+  transition:all 0.22s; box-shadow:var(--shadow);
+  position:relative; overflow:hidden;
+}
+.laptop-card:active { transform:scale(0.985); box-shadow:none; }
+.laptop-card::before {
+  content:''; position:absolute; right:0; top:0; bottom:0; width:4px;
+  background:linear-gradient(180deg, var(--gold), var(--gold2));
+  border-radius:0 var(--radius) var(--radius) 0;
+}
+.card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.card-model { font-size:15px; font-weight:800; flex:1; line-height:1.3; color:var(--accent); }
+.status-badge {
+  font-size:11px; font-weight:700; padding:4px 10px; border-radius:20px;
+  white-space:nowrap; flex-shrink:0;
+}
+.status-maintenance { background:var(--orange-bg); color:var(--orange); }
+.status-ready       { background:var(--blue-bg);   color:var(--blue); }
+.status-sold        { background:var(--green-bg);  color:var(--green); }
+.card-meta { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; }
+.meta-tag {
+  font-size:11px; color:var(--text2); background:var(--bg3);
+  padding:3px 8px; border-radius:var(--radius-xs);
+  display:flex; align-items:center; gap:3px; font-weight:500;
+}
+.qty-badge {
+  display:inline-flex; align-items:center; justify-content:center;
+  min-width:22px; height:20px; border-radius:5px;
+  background:var(--gold-bg); color:var(--gold);
+  font-size:11px; font-weight:800; padding:0 5px; margin-right:4px;
+}
+
+/* ── COST ROW ── */
+.cost-row { margin-top:12px; display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.cost-box { background:var(--bg3); border-radius:var(--radius-sm); padding:10px 8px; }
+.cost-box .c-lbl { font-size:9px; color:var(--text3); font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px; }
+.cost-box .c-val { font-size:13px; font-weight:800; }
+.c-buy  { color:var(--gold); }
+.c-exp  { color:var(--red); }
+.c-net  { color:var(--green); }
+.c-sell { color:var(--blue); }
+.profit-bar { height:3px; background:var(--border); border-radius:2px; overflow:hidden; margin-top:8px; }
+.profit-fill { height:100%; border-radius:2px; background:linear-gradient(90deg,var(--gold),var(--green)); transition:width 0.5s; }
+
+/* ── PROFIT CHIP ── */
+.profit-row { margin-top:10px; display:flex; align-items:center; justify-content:space-between; }
+.profit-chip {
+  font-size:12px; font-weight:800; padding:5px 12px; border-radius:20px;
+}
+.profit-positive { background:var(--green-bg); color:var(--green); }
+.profit-negative { background:var(--red-bg);   color:var(--red); }
+.profit-zero     { background:var(--bg3);       color:var(--text2); }
+
+/* ── MODAL ── */
+.overlay {
+  display:none; position:fixed; inset:0; z-index:200;
+  background:rgba(26,26,46,0.5); backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+}
+.overlay.open { display:flex; align-items:flex-end; }
+.modal {
+  background:#fff; border-radius:24px 24px 0 0;
+  width:100%; max-height:92vh; overflow-y:auto;
+  padding:0 20px 40px;
+  animation:slideUp 0.3s cubic-bezier(0.34,1.4,0.64,1);
+}
+@keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+.modal-handle { width:36px; height:4px; border-radius:2px; background:var(--border); margin:14px auto 18px; }
+.modal-title { font-size:18px; font-weight:900; color:var(--accent); margin-bottom:18px; }
+
+/* ── FORM ── */
+.form-group { margin-bottom:13px; }
+.form-label { font-size:12px; font-weight:700; color:var(--text2); margin-bottom:6px; display:block; letter-spacing:0.3px; }
+.form-input, .form-select {
+  width:100%; background:var(--bg3);
+  border:1.5px solid var(--border); border-radius:var(--radius-sm);
+  padding:11px 13px; color:var(--text);
+  font-family:'Tajawal',sans-serif; font-size:14px;
+  outline:none; transition:border-color 0.2s; -webkit-appearance:none;
+}
+.form-input:focus, .form-select:focus { border-color:var(--gold); background:#fff; }
+.form-input::placeholder { color:var(--text3); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+
+/* ── BUTTONS ── */
+.btn { width:100%; padding:13px; border:none; border-radius:var(--radius); cursor:pointer; font-family:'Tajawal',sans-serif; font-size:15px; font-weight:800; transition:all 0.18s; }
+.btn-gold { background:linear-gradient(135deg,var(--gold),var(--gold2)); color:#fff; box-shadow:var(--shadow-gold); }
+.btn-gold:active { transform:scale(0.97); }
+.btn-ghost { background:transparent; color:var(--text2); border:1.5px solid var(--border); margin-top:8px; font-weight:600; }
+.btn-danger { background:var(--red-bg); color:var(--red); border:1.5px solid rgba(229,62,62,0.2); margin-top:8px; font-weight:700; }
+.btn-blue { background:var(--blue-bg); color:var(--blue); border:1.5px solid rgba(59,130,246,0.2); font-weight:700; }
+
+/* ── BACK ── */
+.back-btn { display:flex; align-items:center; gap:5px; color:var(--gold); font-size:14px; font-weight:700; cursor:pointer; margin:10px 0 14px; width:fit-content; }
+.back-btn svg { width:18px; height:18px; }
+
+/* ── DETAIL HERO ── */
+.detail-hero {
+  background:linear-gradient(135deg, var(--accent), var(--accent2));
+  border-radius:var(--radius); padding:20px;
+  margin-bottom:14px; color:#fff; position:relative; overflow:hidden;
+}
+.detail-hero::before {
+  content:'💻'; position:absolute; left:-10px; bottom:-10px;
+  font-size:80px; opacity:0.07; line-height:1;
+}
+.hero-model { font-size:20px; font-weight:900; margin-bottom:3px; }
+.hero-sub { font-size:12px; opacity:0.65; margin-bottom:16px; }
+.hero-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.hero-stat { background:rgba(255,255,255,0.1); border-radius:var(--radius-sm); padding:10px 12px; border:1px solid rgba(255,255,255,0.12); }
+.hero-stat .hs-lbl { font-size:10px; opacity:0.6; margin-bottom:3px; font-weight:600; }
+.hero-stat .hs-val { font-size:15px; font-weight:900; }
+.hero-total {
+  margin-top:10px; background:rgba(212,160,23,0.2); border:1px solid rgba(212,160,23,0.3);
+  border-radius:var(--radius-sm); padding:12px; text-align:center;
+}
+.hero-total .ht-lbl { font-size:11px; opacity:0.7; margin-bottom:3px; }
+.hero-total .ht-val { font-size:24px; font-weight:900; color:var(--gold2); }
+.hero-profit { margin-top:8px; text-align:center; }
+.hero-profit .hp-chip { display:inline-block; padding:5px 16px; border-radius:20px; font-size:13px; font-weight:800; }
+.profit-pos { background:rgba(29,185,84,0.2); color:#4ADE80; border:1px solid rgba(29,185,84,0.3); }
+.profit-neg { background:rgba(229,62,62,0.2); color:#FC8181; border:1px solid rgba(229,62,62,0.3); }
+
+/* ── TIMELINE ── */
+.timeline { position:relative; padding-right:22px; margin-top:12px; }
+.timeline::before { content:''; position:absolute; right:9px; top:10px; bottom:10px; width:2px; background:var(--border); }
+.tl-item { position:relative; margin-bottom:12px; }
+.tl-dot { position:absolute; right:-13px; top:10px; width:10px; height:10px; border-radius:50%; background:var(--gold); border:2.5px solid #fff; box-shadow:0 0 0 2px var(--gold2); }
+.tl-card { background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px 13px; box-shadow:var(--shadow); }
+.tl-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+.tl-title { font-size:13px; font-weight:700; color:var(--accent); }
+.tl-amount { font-size:14px; font-weight:800; color:var(--red); flex-shrink:0; }
+.tl-meta { font-size:11px; color:var(--text3); margin-top:4px; line-height:1.5; }
+.tl-del { margin-top:6px; background:var(--red-bg); border:none; color:var(--red); border-radius:var(--radius-xs); padding:3px 10px; font-size:11px; font-weight:700; cursor:pointer; font-family:'Tajawal',sans-serif; }
+
+/* ── TYPE BADGE ── */
+.type-badge { display:inline-block; font-size:10px; font-weight:700; padding:2px 7px; border-radius:4px; margin-left:5px; }
+.tb-maintenance { background:var(--orange-bg); color:var(--orange); }
+.tb-accessories  { background:var(--blue-bg);   color:var(--blue); }
+.tb-purchase     { background:var(--gold-bg);   color:var(--gold); }
+.tb-other        { background:var(--bg3);        color:var(--text2); }
+
+/* ── CARD ACTIONS ── */
+.card-actions { display:flex; gap:8px; margin-top:12px; }
+.action-btn { flex:1; padding:9px; border-radius:var(--radius-sm); border:none; cursor:pointer; font-family:'Tajawal',sans-serif; font-size:12px; font-weight:700; transition:all 0.2s; }
+.action-edit { background:var(--gold-bg); color:var(--gold); }
+.action-del  { background:var(--red-bg);  color:var(--red); }
+.action-pdf  { background:var(--blue-bg); color:var(--blue); }
+
+/* ── DIVIDER ── */
+.divider { height:1px; background:var(--border); margin:14px 0; }
+
+/* ── EMPTY ── */
+.empty { text-align:center; padding:50px 20px; color:var(--text2); }
+.empty-icon { font-size:48px; margin-bottom:12px; opacity:0.35; display:block; }
+.empty h3 { font-size:16px; font-weight:800; color:var(--text); margin-bottom:5px; }
+.empty p  { font-size:13px; line-height:1.5; }
+
+/* ── TOAST ── */
+.toast {
+  position:fixed; bottom:82px; left:50%; transform:translateX(-50%) translateY(12px);
+  padding:10px 20px; border-radius:20px;
+  font-size:13px; font-weight:700; z-index:300;
+  opacity:0; transition:all 0.3s; white-space:nowrap;
+  box-shadow:var(--shadow-md); color:#fff;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── REPORT CARDS ── */
+.report-big {
+  background:linear-gradient(135deg,var(--accent),var(--accent2));
+  border-radius:var(--radius); padding:22px 20px;
+  color:#fff; margin-bottom:14px; text-align:center;
+}
+.report-big .rb-lbl { font-size:12px; opacity:0.6; margin-bottom:6px; font-weight:600; }
+.report-big .rb-val { font-size:32px; font-weight:900; color:var(--gold2); }
+.report-big .rb-sub { font-size:12px; opacity:0.55; margin-top:4px; }
+
+.report-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.report-mini { background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius); padding:14px 12px; box-shadow:var(--shadow); }
+.report-mini .rm-icon { font-size:20px; margin-bottom:6px; }
+.report-mini .rm-val { font-size:18px; font-weight:900; color:var(--accent); }
+.report-mini .rm-lbl { font-size:11px; color:var(--text2); font-weight:600; margin-top:2px; }
+
+.exp-row { display:flex; align-items:center; gap:10px; background:var(--card); border:1.5px solid var(--border); border-radius:var(--radius-sm); padding:12px 13px; margin-bottom:8px; box-shadow:var(--shadow); }
+.exp-icon2 { width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+.exp-info2 { flex:1; }
+.exp-name2 { font-size:13px; font-weight:700; color:var(--accent); }
+.exp-bar   { height:3px; background:var(--border); border-radius:2px; overflow:hidden; margin-top:5px; }
+.exp-bar-fill { height:100%; border-radius:2px; transition:width 0.5s; }
+.exp-amount2 { font-size:14px; font-weight:900; flex-shrink:0; }
+
+/* STATUS SELECT STYLES */
+.status-pills { display:flex; gap:8px; margin-top:4px; }
+.status-pill {
+  flex:1; padding:9px 4px; border-radius:var(--radius-sm); border:1.5px solid var(--border);
+  font-family:'Tajawal',sans-serif; font-size:12px; font-weight:700;
+  cursor:pointer; text-align:center; transition:all 0.2s; background:var(--bg3); color:var(--text2);
+}
+.status-pill.sel-maintenance { border-color:var(--orange); background:var(--orange-bg); color:var(--orange); }
+.status-pill.sel-ready       { border-color:var(--blue);   background:var(--blue-bg);   color:var(--blue); }
+.status-pill.sel-sold        { border-color:var(--green);  background:var(--green-bg);  color:var(--green); }
+
+select option { background:#fff; color:var(--text); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="6" width="20" height="13" rx="3"/>
+        <path d="M8 19v2M16 19v2M5 21h14"/>
+        <path d="M7 10h10M7 13.5h6"/>
+      </svg>
+    </div>
+    <span class="logo-text">ك<span>ل</span>ف</span>
+  </div>
+  <span class="dev-badge">by نورالدين</span>
+</div>
+
+<!-- ══ PAGE HOME ══ -->
+<div class="page active" id="page-home">
+  <div class="search-wrap">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input class="search-input" id="homeSearch" placeholder="ابحث عن موديل..." oninput="renderHome()">
+  </div>
+  <div class="chips" id="homeChips">
+    <div class="chip active" onclick="setChip(this,'all')">الكل</div>
+    <div class="chip" onclick="setChip(this,'maintenance')">🔧 صيانة</div>
+    <div class="chip" onclick="setChip(this,'ready')">✅ جاهز</div>
+    <div class="chip" onclick="setChip(this,'sold')">🏷️ مباع</div>
+    <div class="chip" onclick="setChip(this,'costly')">الأغلى</div>
+  </div>
+  <div class="stats-row" id="homeStats"></div>
+  <div class="sec-title">اللابتوبات</div>
+  <div id="laptopList"></div>
+</div>
+
+<!-- ══ PAGE DETAIL ══ -->
+<div class="page" id="page-detail">
+  <div class="back-btn" onclick="goBack()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 18 6-6-6-6"/></svg>
+    رجوع
+  </div>
+  <div id="detailContent"></div>
+</div>
+
+<!-- ══ PAGE REPORTS ══ -->
+<div class="page" id="page-reports">
+  <div id="reportsContent"></div>
+</div>
+
+<!-- ══ PAGE SETTINGS ══ -->
+<div class="page" id="page-settings">
+  <div class="sec-title">عن التطبيق</div>
+  <div class="laptop-card" style="cursor:default">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <div class="logo-icon" style="width:48px;height:48px;border-radius:14px;font-size:24px"></div>
+      <div>
+        <div style="font-size:17px;font-weight:900;color:var(--accent)">كلف</div>
+        <div style="font-size:12px;color:var(--text2)">v2.0.0 · تتبع تكاليف اللابتوبات</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--text2);line-height:1.7">
+      المطور: <strong style="color:var(--accent)">نورالدين</strong><br>
+      المتجر: <strong style="color:var(--gold)">ALBASSET LAPTOP</strong><br>
+      البيانات محفوظة على جهازك بشكل كامل
+    </div>
+  </div>
+  <div class="sec-title">الأدوات</div>
+  <button class="btn btn-blue" onclick="exportData()" style="margin-bottom:10px">📤 تصدير البيانات (JSON)</button>
+  <button class="btn btn-ghost" onclick="importData()">📥 استيراد بيانات</button>
+  <input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
+  <button class="btn btn-danger" onclick="confirmClear()" style="margin-top:10px">🗑 مسح كل البيانات</button>
+</div>
+
+<!-- ══ BOTTOM NAV ══ -->
+<div class="bottom-nav">
+  <div class="nav-item active" onclick="navigate('home',this)" id="nav-home">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <span>الرئيسية</span>
+  </div>
+  <div class="nav-item" onclick="navigate('reports',this)" id="nav-reports">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2.2" id="nav-reports-svg"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+    </div>
+    <span>التقارير</span>
+  </div>
+  <div class="nav-item" onclick="navigate('settings',this)" id="nav-settings">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="2.2" id="nav-settings-svg"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </div>
+    <span>الإعدادات</span>
+  </div>
+</div>
+
+<!-- FAB -->
+<button class="fab" onclick="openModal('laptop')" id="fab">
+  <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#fff" stroke-width="2.8"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+</button>
+
+<!-- ══ MODAL: LAPTOP ══ -->
+<div class="overlay" id="modalLaptop" onclick="closeOnBg(event,'modalLaptop')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="laptopModalTitle">➕ إضافة لابتوب</div>
+    <div class="form-group">
+      <label class="form-label">اسم الموديل *</label>
+      <input class="form-input" id="lModel" placeholder="مثال: HP 650 G1">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">الكمية *</label>
+        <input class="form-input" id="lQty" type="number" min="1" placeholder="1">
+      </div>
+      <div class="form-group">
+        <label class="form-label">سعر شراء الحبة (د.إ)</label>
+        <input class="form-input" id="lPrice" type="number" placeholder="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">سعر البيع المتوقع للحبة (د.إ)</label>
+      <input class="form-input" id="lSellPrice" type="number" placeholder="0">
+    </div>
+    <div class="form-group">
+      <label class="form-label">المصدر / المورد</label>
+      <input class="form-input" id="lSource" placeholder="من أين اشتريت؟">
+    </div>
+    <div class="form-group">
+      <label class="form-label">الحالة</label>
+      <div class="status-pills">
+        <div class="status-pill" onclick="selectStatus('maintenance',this)">🔧 صيانة</div>
+        <div class="status-pill" onclick="selectStatus('ready',this)">✅ جاهز</div>
+        <div class="status-pill" onclick="selectStatus('sold',this)">🏷️ مباع</div>
+      </div>
+      <input type="hidden" id="lStatus" value="maintenance">
+    </div>
+    <div class="form-group">
+      <label class="form-label">ملاحظات</label>
+      <input class="form-input" id="lNotes" placeholder="أي ملاحظات إضافية...">
+    </div>
+    <input type="hidden" id="editLaptopId">
+    <button class="btn btn-gold" onclick="saveLaptop()">💾 حفظ اللابتوب</button>
+    <button class="btn btn-ghost" onclick="closeModal('modalLaptop')">إلغاء</button>
+  </div>
+</div>
+
+<!-- ══ MODAL: EXPENSE ══ -->
+<div class="overlay" id="modalExpense" onclick="closeOnBg(event,'modalExpense')">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">💸 إضافة تكلفة</div>
+    <input type="hidden" id="expLaptopId">
+    <div class="form-group">
+      <label class="form-label">نوع التكلفة *</label>
+      <select class="form-select" id="expType">
+        <option value="maintenance">🔧 صيانة / بينت</option>
+        <option value="accessories">💾 إكسسوار (رام، هارد...)</option>
+        <option value="purchase">📦 شراء قطع</option>
+        <option value="other">📌 أخرى</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label class="form-label">الوصف *</label>
+      <input class="form-input" id="expDesc" placeholder="مثال: تبديل رام 8GB">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">المبلغ للحبة (د.إ) *</label>
+        <input class="form-input" id="expAmount" type="number" placeholder="0">
+      </div>
+      <div class="form-group">
+        <label class="form-label">الكمية</label>
+        <input class="form-input" id="expQty" type="number" min="1" value="1">
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">المصدر / المورد</label>
+      <input class="form-input" id="expSource" placeholder="من أين؟">
+    </div>
+    <button class="btn btn-gold" onclick="saveExpense()">✅ إضافة التكلفة</button>
+    <button class="btn btn-ghost" onclick="closeModal('modalExpense')">إلغاء</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──
+let DB = JSON.parse(localStorage.getItem('kulf_v2') || '{"laptops":[],"expenses":[]}');
+let currentChip = 'all';
+let currentDetailId = null;
+
+function save() { localStorage.setItem('kulf_v2', JSON.stringify(DB)); }
+function uid()  { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function fmtDate(ts) {
+  const d = new Date(ts);
+  return d.toLocaleDateString('ar-AE',{day:'2-digit',month:'2-digit',year:'numeric'})
+    + ' · ' + d.toLocaleTimeString('ar-AE',{hour:'2-digit',minute:'2-digit',hour12:true});
+}
+function fmtAED(n) {
+  n = Number(n||0);
+  if (n >= 1000) return n.toLocaleString('ar-AE',{maximumFractionDigits:0}) + ' د.إ';
+  return n.toFixed(0) + ' د.إ';
+}
+
+// ── NAV ──
+function navigate(page, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => {
+    n.classList.remove('active');
+    const svg = n.querySelector('svg');
+    if (svg) svg.setAttribute('stroke','var(--text3)');
+  });
+  document.getElementById('page-'+page).classList.add('active');
+  if (el) {
+    el.classList.add('active');
+    const svg = el.querySelector('svg');
+    if (svg) svg.setAttribute('stroke','var(--gold)');
+  }
+  document.getElementById('fab').style.display = page==='home' ? 'flex' : 'none';
+  if (page==='reports') renderReports();
+  if (page==='home') renderHome();
+}
+function goBack() { navigate('home', document.getElementById('nav-home')); }
+
+// ── CHIPS ──
+function setChip(el, val) {
+  currentChip = val;
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderHome();
+}
+
+// ── MODAL ──
+let selectedStatus = 'maintenance';
+function openModal(id) {
+  if (id==='laptop') {
+    ['lModel','lSource','lNotes'].forEach(f => document.getElementById(f).value='');
+    document.getElementById('lQty').value='';
+    document.getElementById('lPrice').value='';
+    document.getElementById('lSellPrice').value='';
+    document.getElementById('editLaptopId').value='';
+    document.getElementById('laptopModalTitle').textContent='➕ إضافة لابتوب';
+    selectStatus('maintenance', document.querySelector('.status-pill'));
+  }
+  document.getElementById('modal'+id[0].toUpperCase()+id.slice(1)).classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeOnBg(e,id) { if(e.target.id===id) closeModal(id); }
+
+function selectStatus(val, el) {
+  selectedStatus = val;
+  document.getElementById('lStatus').value = val;
+  document.querySelectorAll('.status-pill').forEach(p => {
+    p.className = 'status-pill';
+    if (p === el || p.textContent.trim().includes(
+      val==='maintenance'?'صيانة':val==='ready'?'جاهز':'مباع'
+    )) p.classList.add('sel-'+val);
+  });
+}
+
+// ── LAPTOP CRUD ──
+function saveLaptop() {
+  const model  = document.getElementById('lModel').value.trim();
+  const qty    = parseInt(document.getElementById('lQty').value)||1;
+  const price  = parseFloat(document.getElementById('lPrice').value)||0;
+  const sell   = parseFloat(document.getElementById('lSellPrice').value)||0;
+  const source = document.getElementById('lSource').value.trim();
+  const status = document.getElementById('lStatus').value||'maintenance';
+  const notes  = document.getElementById('lNotes').value.trim();
+  const editId = document.getElementById('editLaptopId').value;
+  if (!model) { showToast('❗ اكتب اسم الموديل','red'); return; }
+  if (editId) {
+    const l = DB.laptops.find(x=>x.id===editId);
+    if (l) Object.assign(l,{model,qty,price,sell,source,status,notes,updatedAt:Date.now()});
+  } else {
+    DB.laptops.unshift({id:uid(),model,qty,price,sell,source,status,notes,createdAt:Date.now()});
+  }
+  save(); closeModal('modalLaptop'); renderHome();
+  showToast('✅ تم الحفظ بنجاح');
+}
+
+function editLaptop(id) {
+  const l = DB.laptops.find(x=>x.id===id); if(!l) return;
+  document.getElementById('lModel').value     = l.model;
+  document.getElementById('lQty').value       = l.qty;
+  document.getElementById('lPrice').value     = l.price;
+  document.getElementById('lSellPrice').value = l.sell||'';
+  document.getElementById('lSource').value    = l.source||'';
+  document.getElementById('lNotes').value     = l.notes||'';
+  document.getElementById('editLaptopId').value = l.id;
+  document.getElementById('laptopModalTitle').textContent = '✏️ تعديل اللابتوب';
+  const pill = [...document.querySelectorAll('.status-pill')].find(p=>p.textContent.includes(
+    l.status==='maintenance'?'صيانة':l.status==='ready'?'جاهز':'مباع'
+  ));
+  selectStatus(l.status||'maintenance', pill);
+  openModal('laptop');
+}
+
+function deleteLaptop(id) {
+  if (!confirm('حذف هذا اللابتوب وكل تكاليفه؟')) return;
+  DB.laptops  = DB.laptops.filter(l=>l.id!==id);
+  DB.expenses = DB.expenses.filter(e=>e.laptopId!==id);
+  save(); goBack(); showToast('🗑 تم الحذف');
+}
+
+// ── EXPENSE CRUD ──
+function openAddExpense(laptopId) {
+  document.getElementById('expLaptopId').value = laptopId;
+  document.getElementById('expDesc').value='';
+  document.getElementById('expAmount').value='';
+  document.getElementById('expQty').value='1';
+  document.getElementById('expSource').value='';
+  document.getElementById('expType').value='maintenance';
+  document.getElementById('modalExpense').classList.add('open');
+}
+function saveExpense() {
+  const laptopId = document.getElementById('expLaptopId').value;
+  const type     = document.getElementById('expType').value;
+  const desc     = document.getElementById('expDesc').value.trim();
+  const amount   = parseFloat(document.getElementById('expAmount').value)||0;
+  const qty      = parseInt(document.getElementById('expQty').value)||1;
+  const source   = document.getElementById('expSource').value.trim();
+  if (!desc||!amount) { showToast('❗ اكتب الوصف والمبلغ','red'); return; }
+  DB.expenses.unshift({id:uid(),laptopId,type,desc,amount,qty,source,createdAt:Date.now()});
+  save(); closeModal('modalExpense'); renderDetail(currentDetailId);
+  showToast('✅ تمت إضافة التكلفة');
+}
+function deleteExpense(id) {
+  if (!confirm('حذف هذه التكلفة؟')) return;
+  DB.expenses = DB.expenses.filter(e=>e.id!==id);
+  save(); renderDetail(currentDetailId); showToast('🗑 تم الحذف');
+}
+
+// ── HELPERS ──
+function totalBuy(l)  { return (l.price||0)*(l.qty||1); }
+function totalExp(id) { return DB.expenses.filter(e=>e.laptopId===id).reduce((s,e)=>s+e.amount*(e.qty||1),0); }
+function totalCost(l) { return totalBuy(l)+totalExp(l.id); }
+function totalSell(l) { return (l.sell||0)*(l.qty||1); }
+function profit(l)    { return totalSell(l) - totalCost(l); }
+
+const statusLabel = { maintenance:'🔧 صيانة', ready:'✅ جاهز', sold:'🏷️ مباع' };
+const statusClass = { maintenance:'status-maintenance', ready:'status-ready', sold:'status-sold' };
+const typeIcon  = { maintenance:'🔧', accessories:'💾', purchase:'📦', other:'📌' };
+const typeLabel = { maintenance:'صيانة', accessories:'إكسسوار', purchase:'شراء قطع', other:'أخرى' };
+const typeBadge = { maintenance:'tb-maintenance', accessories:'tb-accessories', purchase:'tb-purchase', other:'tb-other' };
+const typeColor = { maintenance:'var(--orange)', accessories:'var(--blue)', purchase:'var(--gold)', other:'var(--text2)' };
+
+// ── RENDER HOME ──
+function renderHome() {
+  const q = (document.getElementById('homeSearch').value||'').toLowerCase();
+  let laps = DB.laptops.filter(l=>l.model.toLowerCase().includes(q));
+  if (currentChip==='maintenance'||currentChip==='ready'||currentChip==='sold') laps=laps.filter(l=>l.status===currentChip);
+  if (currentChip==='costly') laps=[...laps].sort((a,b)=>totalCost(b)-totalCost(a));
+
+  const grandTotal  = DB.laptops.reduce((s,l)=>s+totalCost(l),0);
+  const totalProfit = DB.laptops.reduce((s,l)=>s+profit(l),0);
+  const totalUnits  = DB.laptops.reduce((s,l)=>s+(l.qty||1),0);
+
+  document.getElementById('homeStats').innerHTML = `
+    <div class="stat-card" style="--bar-color:var(--gold)">
+      <span class="s-val">${fmtAED(grandTotal)}</span>
+      <span class="s-lbl">إجمالي التكاليف</span>
+    </div>
+    <div class="stat-card" style="--bar-color:${totalProfit>=0?'var(--green)':'var(--red)'}">
+      <span class="s-val" style="color:${totalProfit>=0?'var(--green)':'var(--red)'}">${totalProfit>=0?'+':''}${fmtAED(totalProfit)}</span>
+      <span class="s-lbl">الربح المتوقع</span>
+    </div>
+    <div class="stat-card" style="--bar-color:var(--accent)">
+      <span class="s-val" style="color:var(--accent)">${totalUnits}</span>
+      <span class="s-lbl">إجمالي الأجهزة</span>
+    </div>
+  `;
+
+  const el = document.getElementById('laptopList');
+  if (!laps.length) {
+    el.innerHTML=`<div class="empty"><span class="empty-icon">💻</span><h3>لا يوجد موديلات</h3><p>اضغط + لإضافة أول لابتوب</p></div>`;
+    return;
+  }
+  el.innerHTML = laps.map(l=>{
+    const tc   = totalCost(l);
+    const ts   = totalSell(l);
+    const pr   = profit(l);
+    const perU = tc/(l.qty||1);
+    const exps = DB.expenses.filter(e=>e.laptopId===l.id);
+    const profPct = ts>0 ? Math.min(100,(pr/ts)*100) : 0;
+    return `
+    <div class="laptop-card" onclick="showDetail('${l.id}')">
+      <div class="card-top">
+        <div class="card-model">💻 ${l.model} <span class="qty-badge">×${l.qty||1}</span></div>
+        <span class="status-badge ${statusClass[l.status]||'status-maintenance'}">${statusLabel[l.status]||statusLabel.maintenance}</span>
+      </div>
+      <div class="card-meta">
+        ${l.source?`<span class="meta-tag">📍 ${l.source}</span>`:''}
+        <span class="meta-tag">📅 ${new Date(l.createdAt).toLocaleDateString('ar-AE')}</span>
+        <span class="meta-tag">🧾 ${exps.length} تكلفة</span>
+      </div>
+      <div class="cost-row">
+        <div class="cost-box"><div class="c-lbl">شراء</div><div class="c-val c-buy">${fmtAED(totalBuy(l))}</div></div>
+        <div class="cost-box"><div class="c-lbl">إضافي</div><div class="c-val c-exp">${fmtAED(totalExp(l.id))}</div></div>
+        <div class="cost-box"><div class="c-lbl">للحبة</div><div class="c-val">${fmtAED(perU)}</div></div>
+      </div>
+      <div class="profit-row">
+        <span style="font-size:12px;color:var(--text2);font-weight:600">الإجمالي: <strong style="color:var(--accent)">${fmtAED(tc)}</strong></span>
+        ${l.sell ? `<span class="profit-chip ${pr>=0?'profit-positive':pr<0?'profit-negative':'profit-zero'}">${pr>=0?'↑':'↓'} ${fmtAED(Math.abs(pr))} ${pr>=0?'ربح':'خسارة'}</span>` : `<span style="font-size:11px;color:var(--text3)">لا يوجد سعر بيع</span>`}
+      </div>
+      ${l.sell?`<div class="profit-bar"><div class="profit-fill" style="width:${Math.max(0,profPct)}%"></div></div>`:''}
+    </div>`;
+  }).join('');
+}
+
+// ── RENDER DETAIL ──
+function showDetail(id) {
+  currentDetailId = id;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('page-detail').classList.add('active');
+  document.getElementById('fab').style.display='none';
+  renderDetail(id);
+}
+
+function renderDetail(id) {
+  const l = DB.laptops.find(x=>x.id===id); if(!l) return;
+  const exps = DB.expenses.filter(e=>e.laptopId===id).sort((a,b)=>b.createdAt-a.createdAt);
+  const tc   = totalCost(l);
+  const ts   = totalSell(l);
+  const pr   = profit(l);
+  const perU = tc/(l.qty||1);
+  const margin = ts>0 ? ((pr/ts)*100).toFixed(1) : null;
+
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-hero">
+      <div class="hero-model">💻 ${l.model}</div>
+      <div class="hero-sub">${l.source||'بدون مصدر'} · ${new Date(l.createdAt).toLocaleDateString('ar-AE')} · <span style="background:rgba(255,255,255,0.15);padding:2px 8px;border-radius:10px;font-size:11px">${statusLabel[l.status]||statusLabel.maintenance}</span></div>
+      <div class="hero-grid">
+        <div class="hero-stat"><div class="hs-lbl">سعر الشراء الكلي</div><div class="hs-val" style="color:var(--gold2)">${fmtAED(totalBuy(l))}</div></div>
+        <div class="hero-stat"><div class="hs-lbl">التكاليف الإضافية</div><div class="hs-val" style="color:#FC8181">${fmtAED(totalExp(id))}</div></div>
+        <div class="hero-stat"><div class="hs-lbl">التكلفة للحبة</div><div class="hs-val" style="color:#fff">${fmtAED(perU)}</div></div>
+        <div class="hero-stat"><div class="hs-lbl">الكمية</div><div class="hs-val" style="color:#fff">${l.qty||1} جهاز</div></div>
+      </div>
+      <div class="hero-total">
+        <div class="ht-lbl">التكلفة الإجمالية الكاملة</div>
+        <div class="ht-val">${fmtAED(tc)}</div>
+      </div>
+      ${l.sell ? `
+      <div class="hero-profit">
+        <div style="font-size:11px;opacity:0.6;margin-bottom:5px">سعر البيع المتوقع: ${fmtAED(ts)} | هامش: ${margin}%</div>
+        <span class="hp-chip ${pr>=0?'profit-pos':'profit-neg'}">${pr>=0?'ربح متوقع ↑':'خسارة متوقعة ↓'} ${fmtAED(Math.abs(pr))}</span>
+      </div>` : ''}
+    </div>
+
+    <div class="card-actions">
+      <button class="action-btn action-edit" onclick="editLaptop('${l.id}')">✏️ تعديل</button>
+      <button class="action-btn action-pdf"  onclick="exportPDF('${l.id}')">📄 PDF</button>
+      <button class="action-btn action-del"  onclick="deleteLaptop('${l.id}')">🗑 حذف</button>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-top:18px">
+      <div class="sec-title" style="margin:0">سجل التكاليف (${exps.length})</div>
+      <button onclick="openAddExpense('${l.id}')" style="background:var(--gold);color:#fff;border:none;border-radius:var(--radius-sm);padding:7px 14px;font-size:13px;font-weight:700;font-family:'Tajawal',sans-serif;cursor:pointer;box-shadow:var(--shadow-gold)">+ إضافة</button>
+    </div>
+
+    ${!exps.length ? `<div class="empty" style="padding:40px 0"><span class="empty-icon">📋</span><h3>لا توجد تكاليف بعد</h3><p>أضف أول تكلفة لهذا الموديل</p></div>` :
+    `<div class="timeline">${exps.map(e=>`
+    <div class="tl-item">
+      <div class="tl-dot"></div>
+      <div class="tl-card">
+        <div class="tl-top">
+          <div>
+            <div class="tl-title">${typeIcon[e.type]||'📌'} ${e.desc} <span class="type-badge ${typeBadge[e.type]||'tb-other'}">${typeLabel[e.type]||'أخرى'}</span></div>
+            <div class="tl-meta">الكمية: ${e.qty||1}${e.source?' · 📍 '+e.source:''}</div>
+            <div class="tl-meta">🕐 ${fmtDate(e.createdAt)}</div>
+          </div>
+          <div style="text-align:left">
+            <div class="tl-amount">${fmtAED(e.amount*(e.qty||1))}</div>
+            ${(e.qty||1)>1?`<div style="font-size:10px;color:var(--text3);margin-top:2px">${fmtAED(e.amount)}/حبة</div>`:''}
+          </div>
+        </div>
+        <button class="tl-del" onclick="deleteExpense('${e.id}')">🗑 حذف</button>
+      </div>
+    </div>`).join('')}</div>`}
+
+    ${l.notes?`<div class="laptop-card" style="cursor:default;margin-top:8px;background:var(--gold-light);border-color:rgba(212,160,23,0.3)"><div style="font-size:11px;color:var(--gold);font-weight:700;margin-bottom:5px">📝 ملاحظات</div><div style="font-size:13px;line-height:1.6;color:var(--text)">${l.notes}</div></div>`:''}
+  `;
+}
+
+// ── REPORTS ──
+function renderReports() {
+  const grandTotal  = DB.laptops.reduce((s,l)=>s+totalCost(l),0);
+  const totalP      = DB.laptops.reduce((s,l)=>s+profit(l),0);
+  const totalBuyAll = DB.laptops.reduce((s,l)=>s+totalBuy(l),0);
+  const totalExpAll = DB.expenses.reduce((s,e)=>s+e.amount*(e.qty||1),0);
+  const totalUnits  = DB.laptops.reduce((s,l)=>s+(l.qty||1),0);
+
+  const byStatus = {maintenance:0,ready:0,sold:0};
+  DB.laptops.forEach(l=>byStatus[l.status||'maintenance']++);
+
+  const byType = {};
+  DB.expenses.forEach(e=>{byType[e.type]=(byType[e.type]||0)+e.amount*(e.qty||1);});
+
+  const top = [...DB.laptops].sort((a,b)=>totalCost(b)-totalCost(a)).slice(0,5);
+
+  document.getElementById('reportsContent').innerHTML = `
+    <div class="sec-title" style="margin-top:14px">الملخص المالي</div>
+    <div class="report-big">
+      <div class="rb-lbl">إجمالي التكاليف الكاملة</div>
+      <div class="rb-val">${fmtAED(grandTotal)}</div>
+      <div class="rb-sub">${DB.laptops.length} موديل · ${totalUnits} جهاز</div>
+    </div>
+    <div class="report-row">
+      <div class="report-mini">
+        <div class="rm-icon">💰</div>
+        <div class="rm-val">${fmtAED(totalBuyAll)}</div>
+        <div class="rm-lbl">إجمالي الشراء</div>
+      </div>
+      <div class="report-mini">
+        <div class="rm-icon">🔧</div>
+        <div class="rm-val">${fmtAED(totalExpAll)}</div>
+        <div class="rm-lbl">التكاليف الإضافية</div>
+      </div>
+      <div class="report-mini" style="${totalP>=0?'border-color:rgba(29,185,84,0.3)':'border-color:rgba(229,62,62,0.3)'}">
+        <div class="rm-icon">${totalP>=0?'📈':'📉'}</div>
+        <div class="rm-val" style="color:${totalP>=0?'var(--green)':'var(--red)'}">${totalP>=0?'+':''}${fmtAED(totalP)}</div>
+        <div class="rm-lbl">الربح المتوقع</div>
+      </div>
+      <div class="report-mini">
+        <div class="rm-icon">📦</div>
+        <div class="rm-val" style="color:var(--accent)">${totalUnits}</div>
+        <div class="rm-lbl">إجمالي الأجهزة</div>
+      </div>
+    </div>
+
+    <div class="sec-title">حالة الموديلات</div>
+    <div class="report-row" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="report-mini" style="border-color:rgba(246,134,31,0.3)"><div class="rm-icon">🔧</div><div class="rm-val" style="color:var(--orange)">${byStatus.maintenance}</div><div class="rm-lbl">صيانة</div></div>
+      <div class="report-mini" style="border-color:rgba(59,130,246,0.3)"><div class="rm-icon">✅</div><div class="rm-val" style="color:var(--blue)">${byStatus.ready}</div><div class="rm-lbl">جاهز</div></div>
+      <div class="report-mini" style="border-color:rgba(29,185,84,0.3)"><div class="rm-icon">🏷️</div><div class="rm-val" style="color:var(--green)">${byStatus.sold}</div><div class="rm-lbl">مباع</div></div>
+    </div>
+
+    ${Object.keys(byType).length?`
+    <div class="sec-title">تصنيف التكاليف الإضافية</div>
+    ${Object.entries(byType).map(([t,v])=>`
+    <div class="exp-row">
+      <div class="exp-icon2" style="background:${t==='maintenance'?'var(--orange-bg)':t==='accessories'?'var(--blue-bg)':t==='purchase'?'var(--gold-bg)':'var(--bg3)'}">${typeIcon[t]||'📌'}</div>
+      <div class="exp-info2">
+        <div class="exp-name2">${typeLabel[t]||t}</div>
+        <div class="exp-bar"><div class="exp-bar-fill" style="width:${Math.min(100,(v/Math.max(totalExpAll,1))*100)}%;background:${typeColor[t]||'var(--gold)'}"></div></div>
+      </div>
+      <div class="exp-amount2" style="color:${typeColor[t]||'var(--gold)'}">${fmtAED(v)}</div>
+    </div>`).join('')}`:''}
+
+    ${top.length?`
+    <div class="sec-title">أعلى الموديلات تكلفةً</div>
+    ${top.map((l,i)=>`
+    <div class="exp-row" onclick="showDetail('${l.id}')" style="cursor:pointer">
+      <div class="exp-icon2" style="background:var(--gold-bg);font-weight:900;color:var(--gold);font-size:15px">#${i+1}</div>
+      <div class="exp-info2">
+        <div class="exp-name2">${l.model} ×${l.qty||1}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px">${DB.expenses.filter(e=>e.laptopId===l.id).length} تكلفة · ${statusLabel[l.status]||statusLabel.maintenance}</div>
+      </div>
+      <div class="exp-amount2" style="color:var(--gold)">${fmtAED(totalCost(l))}</div>
+    </div>`).join('')}`:''}
+    <div style="height:10px"></div>
+  `;
+}
+
+// ── PDF EXPORT ──
+async function exportPDF(id) {
+  const l = DB.laptops.find(x=>x.id===id); if(!l) return;
+  showToast('⏳ جاري إنشاء PDF...','blue');
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+
+  const exps = DB.expenses.filter(e=>e.laptopId===id).sort((a,b)=>b.createdAt-a.createdAt);
+  const tc   = totalCost(l);
+  const ts   = totalSell(l);
+  const pr   = profit(l);
+
+  // Header
+  doc.setFillColor(26,26,46);
+  doc.rect(0,0,210,40,'F');
+  doc.setTextColor(212,160,23);
+  doc.setFontSize(22); doc.setFont('helvetica','bold');
+  doc.text('KULF', 105,18,{align:'center'});
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(10); doc.setFont('helvetica','normal');
+  doc.text('Laptop Cost Tracker - ALBASSET LAPTOP', 105,26,{align:'center'});
+  doc.text('Dev: Nour Al-Din', 105,33,{align:'center'});
+
+  // Model name
+  doc.setTextColor(26,26,46);
+  doc.setFontSize(16); doc.setFont('helvetica','bold');
+  doc.text(l.model, 105,52,{align:'center'});
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.setTextColor(107,114,128);
+  doc.text(`Source: ${l.source||'-'} | Qty: ${l.qty||1} | Status: ${l.status||'maintenance'}`, 105,59,{align:'center'});
+  doc.text(`Date: ${new Date(l.createdAt).toLocaleDateString()}`, 105,64,{align:'center'});
+
+  // Summary boxes
+  doc.setDrawColor(229,231,235);
+  const boxes = [
+    {label:'Purchase Total', val:fmtAED(totalBuy(l)), x:14},
+    {label:'Extra Costs',    val:fmtAED(totalExp(id)), x:77},
+    {label:'Grand Total',   val:fmtAED(tc), x:140},
+  ];
+  boxes.forEach(b=>{
+    doc.setFillColor(247,248,250); doc.roundedRect(b.x,70,58,20,3,3,'F');
+    doc.setFontSize(8); doc.setTextColor(107,114,128); doc.text(b.label,b.x+29,77,{align:'center'});
+    doc.setFontSize(11); doc.setTextColor(26,26,46); doc.setFont('helvetica','bold');
+    doc.text(b.val,b.x+29,85,{align:'center'});
+    doc.setFont('helvetica','normal');
+  });
+
+  if (l.sell) {
+    doc.setFillColor(pr>=0?232:254, pr>=0?248:240, pr>=0?238:240);
+    doc.roundedRect(14,94,182,12,3,3,'F');
+    doc.setFontSize(9); doc.setTextColor(pr>=0?29:229,pr>=0?185:62,pr>=0?84:62);
+    doc.text(`Expected Sell: ${fmtAED(ts)} | ${pr>=0?'Profit':'Loss'}: ${fmtAED(Math.abs(pr))} | Margin: ${ts>0?((pr/ts)*100).toFixed(1):0}%`,105,102,{align:'center'});
+  }
+
+  // Expenses table
+  let y = (l.sell ? 115 : 100);
+  doc.setFontSize(10); doc.setFont('helvetica','bold'); doc.setTextColor(26,26,46);
+  doc.text('Cost History', 14, y); y+=6;
+
+  if (!exps.length) {
+    doc.setFontSize(9); doc.setFont('helvetica','normal'); doc.setTextColor(107,114,128);
+    doc.text('No expenses recorded.', 14, y);
+  } else {
+    // Table header
+    doc.setFillColor(26,26,46);
+    doc.rect(14,y,182,8,'F');
+    doc.setTextColor(255,255,255); doc.setFontSize(8);
+    doc.text('Description', 20,y+5.5);
+    doc.text('Type',75,y+5.5);
+    doc.text('Qty',110,y+5.5);
+    doc.text('Unit Price',125,y+5.5);
+    doc.text('Total',160,y+5.5);
+    doc.text('Date',175,y+5.5);
+    y+=10;
+
+    exps.forEach((e,i)=>{
+      if (y>270) { doc.addPage(); y=20; }
+      doc.setFillColor(i%2===0?247:255,i%2===0?248:255,i%2===0?250:255);
+      doc.rect(14,y,182,8,'F');
+      doc.setTextColor(26,26,46); doc.setFontSize(8); doc.setFont('helvetica','normal');
+      const desc = e.desc.length>30 ? e.desc.slice(0,28)+'...' : e.desc;
+      doc.text(desc,20,y+5.5);
+      doc.text(typeLabel[e.type]||e.type,75,y+5.5);
+      doc.text(String(e.qty||1),115,y+5.5,{align:'center'});
+      doc.text(fmtAED(e.amount),143,y+5.5,{align:'center'});
+      doc.setFont('helvetica','bold');
+      doc.text(fmtAED(e.amount*(e.qty||1)),170,y+5.5,{align:'center'});
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(107,114,128);
+      doc.text(new Date(e.createdAt).toLocaleDateString(),185,y+5.5,{align:'center'});
+      doc.setDrawColor(229,231,235);
+      doc.line(14,y+8,196,y+8);
+      y+=9;
+    });
+
+    // Total row
+    doc.setFillColor(212,160,23);
+    doc.rect(14,y,182,9,'F');
+    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text('GRAND TOTAL',20,y+6);
+    doc.text(fmtAED(tc),170,y+6,{align:'center'});
+  }
+
+  // Footer
+  const pgH = doc.internal.pageSize.height;
+  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(107,114,128);
+  doc.text(`Generated by كلف App | ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 105, pgH-10, {align:'center'});
+
+  doc.save(`كلف_${l.model}_${new Date().toISOString().slice(0,10)}.pdf`);
+  setTimeout(()=>showToast('✅ تم تصدير PDF بنجاح'),500);
+}
+
+// ── UTILS ──
+function showToast(msg, type='green') {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.background = type==='red'?'var(--red)':type==='blue'?'var(--blue)':'var(--green)';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function exportData() {
+  const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='kulf_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  showToast('📤 تم التصدير');
+}
+function importData() { document.getElementById('importFile').click(); }
+function handleImport(e) {
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=ev=>{
+    try {
+      const d=JSON.parse(ev.target.result);
+      if (d.laptops&&d.expenses) { DB=d; save(); renderHome(); showToast('✅ تم الاستيراد'); }
+      else showToast('❗ ملف غير صالح','red');
+    } catch { showToast('❗ خطأ في الاستيراد','red'); }
+  };
+  r.readAsText(f);
+}
+function confirmClear() {
+  if (confirm('⚠️ سيتم حذف كل البيانات نهائياً. متأكد؟')) {
+    DB={laptops:[],expenses:[]};save();renderHome();showToast('🗑 تم المسح');
+  }
+}
+
+// ── INIT ──
+renderHome();
+
+// ── PWA SERVICE WORKER ──
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW error:', err));
+  });
+}
+
+// ── PWA INSTALL PROMPT ──
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Show install banner after 3 seconds
+  setTimeout(() => {
+    if (deferredPrompt) showInstallBanner();
+  }, 3000);
+});
+
+function showInstallBanner() {
+  const banner = document.createElement('div');
+  banner.id = 'installBanner';
+  banner.style.cssText = `
+    position:fixed;top:70px;left:50%;transform:translateX(-50%);
+    background:#fff;border:1.5px solid #D4A017;border-radius:16px;
+    padding:12px 16px;z-index:999;display:flex;align-items:center;gap:12px;
+    box-shadow:0 8px 30px rgba(212,160,23,0.25);max-width:360px;width:90%;
+    animation:fadeUp 0.3s ease;font-family:'Tajawal',sans-serif;
+  `;
+  banner.innerHTML = `
+    <div style="width:40px;height:40px;background:linear-gradient(135deg,#D4A017,#E8B84B);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#fff" stroke-width="2.5"><rect x="2" y="6" width="20" height="13" rx="3"/><path d="M8 19v2M16 19v2M5 21h14"/></svg>
+    </div>
+    <div style="flex:1">
+      <div style="font-size:13px;font-weight:800;color:#1A1A2E">ثبّت تطبيق كلف</div>
+      <div style="font-size:11px;color:#6B7280;margin-top:2px">يعمل بدون انترنت مثل تطبيق حقيقي</div>
+    </div>
+    <button onclick="installApp()" style="background:linear-gradient(135deg,#D4A017,#E8B84B);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:12px;font-weight:800;cursor:pointer;font-family:'Tajawal',sans-serif;">تنصيب</button>
+    <button onclick="document.getElementById('installBanner').remove()" style="background:none;border:none;font-size:18px;cursor:pointer;color:#9CA3AF;padding:0 2px;">×</button>
+  `;
+  document.body.appendChild(banner);
+}
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  const { outcome } = await deferredPrompt.userChoice;
+  if (outcome === 'accepted') showToast('✅ تم تنصيب التطبيق!');
+  deferredPrompt = null;
+  const b = document.getElementById('installBanner');
+  if (b) b.remove();
+}
+</script>
+</body>
+</html>
