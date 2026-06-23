@@ -620,80 +620,80 @@ function setChip(el, val) {
 
 // ── MODAL ──
 let selectedStatus = 'maintenance';
-function openModal(id) {
-  if (id==='laptop') {
-    // فقط امسح الحقول لما نفتح للإضافة الجديدة مش للتعديل
-    const isNew = !document.getElementById('editLaptopId').value;
-    if (isNew) {
-      ['lModel','lSource','lNotes'].forEach(f => document.getElementById(f).value='');
-      document.getElementById('lQty').value='';
-      document.getElementById('lPrice').value='';
-      document.getElementById('lSellPrice').value='';
-      document.getElementById('laptopModalTitle').textContent='➕ إضافة لابتوب';
-      selectStatus('maintenance', document.querySelector('.status-pill'));
-    }
-  }
-  document.getElementById('modal'+id[0].toUpperCase()+id.slice(1)).classList.add('open');
-}
 
-function openNewLaptop() {
-  document.getElementById('editLaptopId').value = '';
-  openModal('laptop');
-}
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
-function closeOnBg(e,id) { if(e.target.id===id) closeModal(id); }
-
-function selectStatus(val, el) {
+function selectStatus(val) {
   selectedStatus = val;
   document.getElementById('lStatus').value = val;
+  const map = {maintenance:'🔧 صيانة', ready:'✅ جاهز', sold:'🏷️ مباع'};
   document.querySelectorAll('.status-pill').forEach(p => {
     p.className = 'status-pill';
-    if (p === el || p.textContent.trim().includes(
-      val==='maintenance'?'صيانة':val==='ready'?'جاهز':'مباع'
-    )) p.classList.add('sel-'+val);
+    if (p.textContent.trim() === map[val]) p.classList.add('sel-'+val);
   });
 }
+
+// فتح مودال إضافة جديدة
+function openNewLaptop() {
+  document.getElementById('lModel').value       = '';
+  document.getElementById('lQty').value         = '';
+  document.getElementById('lPrice').value       = '';
+  document.getElementById('lSellPrice').value   = '';
+  document.getElementById('lSource').value      = '';
+  document.getElementById('lNotes').value       = '';
+  document.getElementById('lStatus').value      = 'maintenance';
+  document.getElementById('editLaptopId').value = '';
+  document.getElementById('laptopModalTitle').textContent = '➕ إضافة لابتوب';
+  selectStatus('maintenance');
+  document.getElementById('modalLaptop').classList.add('open');
+}
+
+// فتح مودال تعديل
+function editLaptop(id) {
+  const l = DB.laptops.find(x => x.id === id);
+  if (!l) return;
+  document.getElementById('lModel').value       = l.model   || '';
+  document.getElementById('lQty').value         = l.qty     || 1;
+  document.getElementById('lPrice').value       = l.price   || '';
+  document.getElementById('lSellPrice').value   = l.sell    || '';
+  document.getElementById('lSource').value      = l.source  || '';
+  document.getElementById('lNotes').value       = l.notes   || '';
+  document.getElementById('lStatus').value      = l.status  || 'maintenance';
+  document.getElementById('editLaptopId').value = l.id;
+  document.getElementById('laptopModalTitle').textContent = '✏️ تعديل اللابتوب';
+  selectStatus(l.status || 'maintenance');
+  document.getElementById('modalLaptop').classList.add('open');
+}
+
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeOnBg(e, id) { if (e.target.id === id) closeModal(id); }
 
 // ── LAPTOP CRUD ──
 function saveLaptop() {
   const model  = document.getElementById('lModel').value.trim();
-  const qty    = parseInt(document.getElementById('lQty').value)||1;
-  const price  = parseFloat(document.getElementById('lPrice').value)||0;
-  const sell   = parseFloat(document.getElementById('lSellPrice').value)||0;
+  const qty    = parseInt(document.getElementById('lQty').value)        || 1;
+  const price  = parseFloat(document.getElementById('lPrice').value)    || 0;
+  const sell   = parseFloat(document.getElementById('lSellPrice').value)|| 0;
   const source = document.getElementById('lSource').value.trim();
-  const status = document.getElementById('lStatus').value||'maintenance';
+  const status = document.getElementById('lStatus').value               || 'maintenance';
   const notes  = document.getElementById('lNotes').value.trim();
-  const editId = document.getElementById('editLaptopId').value;
-  if (!model) { showToast('❗ اكتب اسم الموديل','red'); return; }
+  const editId = document.getElementById('editLaptopId').value.trim();
+  if (!model) { showToast('❗ اكتب اسم الموديل', 'red'); return; }
   if (editId) {
-    const l = DB.laptops.find(x=>x.id===editId);
-    if (l) Object.assign(l,{model,qty,price,sell,source,status,notes,updatedAt:Date.now()});
-    save(); closeModal('modalLaptop');
-    // ارجع لصفحة التفاصيل وحدّثها
-    renderDetail(editId);
+    const l = DB.laptops.find(x => x.id === editId);
+    if (l) {
+      l.model=model; l.qty=qty; l.price=price; l.sell=sell;
+      l.source=source; l.status=status; l.notes=notes; l.updatedAt=Date.now();
+    }
+    save();
+    closeModal('modalLaptop');
     showToast('✅ تم التعديل بنجاح');
+    showDetail(editId);
   } else {
     DB.laptops.unshift({id:uid(),model,qty,price,sell,source,status,notes,createdAt:Date.now()});
-    save(); closeModal('modalLaptop'); renderHome();
+    save();
+    closeModal('modalLaptop');
+    renderHome();
     showToast('✅ تم الحفظ بنجاح');
   }
-}
-
-function editLaptop(id) {
-  const l = DB.laptops.find(x=>x.id===id); if(!l) return;
-  document.getElementById('lModel').value     = l.model;
-  document.getElementById('lQty').value       = l.qty;
-  document.getElementById('lPrice').value     = l.price;
-  document.getElementById('lSellPrice').value = l.sell||'';
-  document.getElementById('lSource').value    = l.source||'';
-  document.getElementById('lNotes').value     = l.notes||'';
-  document.getElementById('editLaptopId').value = l.id;
-  document.getElementById('laptopModalTitle').textContent = '✏️ تعديل اللابتوب';
-  const pill = [...document.querySelectorAll('.status-pill')].find(p=>p.textContent.includes(
-    l.status==='maintenance'?'صيانة':l.status==='ready'?'جاهز':'مباع'
-  ));
-  selectStatus(l.status||'maintenance', pill);
-  openModal('laptop');
 }
 
 function deleteLaptop(id) {
@@ -964,209 +964,244 @@ function renderReports() {
 
 // ── PDF EXPORT ──
 // تحويل المبلغ لنص إنجليزي نظيف للـ PDF
-function pdfAED(n) {
-  return Number(n||0).toFixed(0) + ' AED';
+// ── PDF HELPERS ──
+function pdfMoney(n) {
+  return Number(n || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}) + ' AED';
 }
-
-// تحويل التاريخ لنص إنجليزي
-function pdfDate(ts) {
+function pdfDateStr(ts) {
   const d = new Date(ts);
-  return d.getDate().toString().padStart(2,'0') + '/'
-       + (d.getMonth()+1).toString().padStart(2,'0') + '/'
-       + d.getFullYear()
-       + ' ' + d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:true});
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yy = d.getFullYear();
+  let hh = d.getHours(), mn = String(d.getMinutes()).padStart(2,'0');
+  const ampm = hh >= 12 ? 'PM' : 'AM';
+  hh = hh % 12 || 12;
+  return dd+'/'+mm+'/'+yy+' '+hh+':'+mn+' '+ampm;
 }
-
-// ترجمة الحالة والنوع للإنجليزي
-const statusEN = { maintenance:'Maintenance', ready:'Ready', sold:'Sold' };
 const typeEN   = { maintenance:'Maintenance', accessories:'Accessories', purchase:'Purchase', other:'Other' };
+const statusEN = { maintenance:'Maintenance', ready:'Ready for Sale', sold:'Sold' };
 
 async function exportPDF(id) {
-  const l = DB.laptops.find(x=>x.id===id); if(!l) return;
-  showToast('⏳ Generating PDF...','blue');
+  const l = DB.laptops.find(x => x.id === id);
+  if (!l) return;
+  showToast('Generating PDF...', 'blue');
 
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ orientation:'portrait', unit:'mm', format:'a4' });
+  const W = 210, margin = 14;
 
-  const exps = DB.expenses.filter(e=>e.laptopId===id).sort((a,b)=>b.createdAt-a.createdAt);
-  const tc = totalCost(l);
-  const ts = totalSell(l);
-  const pr = profit(l);
-  const perU = tc / (l.qty||1);
+  const exps  = DB.expenses.filter(e => e.laptopId === id).sort((a,b) => b.createdAt - a.createdAt);
+  const buyT  = totalBuy(l);
+  const expT  = totalExp(id);
+  const grand = totalCost(l);
+  const sellT = totalSell(l);
+  const prof  = profit(l);
+  const perU  = grand / (l.qty || 1);
 
-  // ── HEADER ──
-  doc.setFillColor(26,26,46);
-  doc.rect(0,0,210,44,'F');
+  // ── HEADER BAR ──
+  doc.setFillColor(26, 26, 46);
+  doc.rect(0, 0, W, 38, 'F');
+  doc.setFillColor(212, 160, 23);
+  doc.rect(0, 38, W, 3, 'F');
 
-  // Gold accent line
-  doc.setFillColor(212,160,23);
-  doc.rect(0,44,210,3,'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(24);
+  doc.setTextColor(212, 160, 23);
+  doc.text('KULF', W/2, 17, { align:'center' });
 
-  doc.setTextColor(212,160,23);
-  doc.setFontSize(26); doc.setFont('helvetica','bold');
-  doc.text('KULF', 105,20,{align:'center'});
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(180, 190, 210);
+  doc.text('Laptop Cost Tracker  |  ALBASSET LAPTOP  |  Dev: Nour Al-Din', W/2, 25, { align:'center' });
+  doc.text('Report: ' + pdfDateStr(Date.now()), W/2, 32, { align:'center' });
 
-  doc.setTextColor(200,210,230);
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.text('Laptop Cost Tracker  |  ALBASSET LAPTOP  |  Dev: Nour Al-Din', 105,30,{align:'center'});
-  doc.text(`Report generated: ${pdfDate(Date.now())}`, 105,38,{align:'center'});
+  // ── MODEL TITLE ──
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(17);
+  doc.setTextColor(26, 26, 46);
+  doc.text(l.model, W/2, 52, { align:'center' });
 
-  // ── MODEL NAME ──
-  doc.setTextColor(26,26,46);
-  doc.setFontSize(18); doc.setFont('helvetica','bold');
-  doc.text(l.model, 105,58,{align:'center'});
-
-  doc.setFontSize(9); doc.setFont('helvetica','normal');
-  doc.setTextColor(107,114,128);
-  const statusStr = statusEN[l.status] || 'Maintenance';
-  doc.text(`Source: ${l.source||'-'}   |   Qty: ${l.qty||1} units   |   Status: ${statusStr}`, 105,65,{align:'center'});
-  doc.text(`Added: ${pdfDate(l.createdAt)}`, 105,71,{align:'center'});
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(100, 110, 130);
+  const meta1 = 'Source: ' + (l.source || '-') + '   Qty: ' + (l.qty || 1) + ' units   Status: ' + (statusEN[l.status] || 'Maintenance');
+  doc.text(meta1, W/2, 59, { align:'center' });
+  doc.text('Added: ' + pdfDateStr(l.createdAt), W/2, 65, { align:'center' });
 
   // ── SUMMARY BOXES ──
   const boxes = [
-    { label:'Purchase Total', val:pdfAED(totalBuy(l)),  color:[253,246,227], border:[212,160,23] },
-    { label:'Extra Costs',    val:pdfAED(totalExp(id)), color:[254,240,240], border:[229,62,62]  },
-    { label:'Grand Total',    val:pdfAED(tc),           color:[232,248,238], border:[29,185,84]  },
+    { lbl:'Purchase Total', val: pdfMoney(buyT),  bg:[253,246,227], bdr:[212,160,23],  tc:[180,120,0]   },
+    { lbl:'Extra Costs',    val: pdfMoney(expT),  bg:[254,240,240], bdr:[220,60,60],   tc:[200,40,40]   },
+    { lbl:'Grand Total',    val: pdfMoney(grand), bg:[232,248,238], bdr:[29,185,84],   tc:[20,160,60]   },
   ];
-  boxes.forEach((b,i)=>{
-    const x = 14 + i*66;
-    doc.setFillColor(...b.color);
-    doc.roundedRect(x,77,62,18,3,3,'F');
-    doc.setDrawColor(...b.border);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(x,77,62,18,3,3,'S');
-    doc.setFontSize(8); doc.setTextColor(107,114,128); doc.setFont('helvetica','normal');
-    doc.text(b.label, x+31,84,{align:'center'});
-    doc.setFontSize(12); doc.setTextColor(26,26,46); doc.setFont('helvetica','bold');
-    doc.text(b.val, x+31,92,{align:'center'});
+  const bw = 58, bh = 18, by = 72;
+  boxes.forEach((b, i) => {
+    const bx = margin + i * (bw + 4);
+    doc.setFillColor(...b.bg);
+    doc.roundedRect(bx, by, bw, bh, 3, 3, 'F');
+    doc.setDrawColor(...b.bdr);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(bx, by, bw, bh, 3, 3, 'S');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.setTextColor(100, 110, 130);
+    doc.text(b.lbl, bx + bw/2, by + 6.5, { align:'center' });
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(11);
+    doc.setTextColor(...b.tc);
+    doc.text(b.val, bx + bw/2, by + 14, { align:'center' });
   });
 
-  // Cost per unit
-  doc.setFillColor(239,246,255);
-  doc.roundedRect(14,98,88,10,2,2,'F');
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(59,130,246);
-  doc.text(`Cost per unit: ${pdfAED(perU)}`, 58,105,{align:'center'});
+  // Per unit pill
+  doc.setFillColor(239, 246, 255);
+  doc.roundedRect(margin, 94, 86, 9, 2, 2, 'F');
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(59, 130, 246);
+  doc.text('Cost per unit: ' + pdfMoney(perU), margin + 43, 100, { align:'center' });
 
-  // ── SELL / PROFIT ROW ──
-  let y = 115;
+  // ── PROFIT ROW ──
+  let y = 108;
   if (l.sell) {
-    const margin = ts>0 ? ((pr/ts)*100).toFixed(1) : '0';
-    doc.setFillColor(pr>=0?232:254, pr>=0?248:240, pr>=0?238:240);
-    doc.roundedRect(14,y,182,13,3,3,'F');
-    doc.setDrawColor(pr>=0?29:229, pr>=0?185:62, pr>=0?84:62);
-    doc.setLineWidth(0.5);
-    doc.roundedRect(14,y,182,13,3,3,'S');
-    doc.setFontSize(9); doc.setFont('helvetica','bold');
-    doc.setTextColor(pr>=0?29:229, pr>=0?185:62, pr>=0?84:62);
-    const profitLabel = pr>=0 ? 'PROFIT' : 'LOSS';
-    doc.text(
-      `Expected Sell: ${pdfAED(ts)}   |   ${profitLabel}: ${pdfAED(Math.abs(pr))}   |   Margin: ${margin}%`,
-      105, y+8.5, {align:'center'}
-    );
-    y += 18;
+    const margin2 = prof >= 0 ? [232,248,238] : [254,240,240];
+    const bdr2    = prof >= 0 ? [29,185,84]   : [220,60,60];
+    const tc2     = prof >= 0 ? [20,140,50]   : [200,40,40];
+    const lbl2    = prof >= 0 ? 'PROFIT' : 'LOSS';
+    const marginPct = sellT > 0 ? ((prof / sellT) * 100).toFixed(1) : '0.0';
+    doc.setFillColor(...margin2);
+    doc.roundedRect(margin, y, 182, 11, 2, 2, 'F');
+    doc.setDrawColor(...bdr2);
+    doc.setLineWidth(0.4);
+    doc.roundedRect(margin, y, 182, 11, 2, 2, 'S');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8.5);
+    doc.setTextColor(...tc2);
+    const profLine = 'Expected Sell: ' + pdfMoney(sellT) + '   ' + lbl2 + ': ' + pdfMoney(Math.abs(prof)) + '   Margin: ' + marginPct + '%';
+    doc.text(profLine, W/2, y + 7.5, { align:'center' });
+    y += 16;
   }
 
   // ── COST HISTORY TABLE ──
-  doc.setFontSize(11); doc.setFont('helvetica','bold'); doc.setTextColor(26,26,46);
-  doc.text('Cost History', 14, y); y+=2;
-
-  // Count line
-  doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(107,114,128);
-  doc.text(`${exps.length} item(s)`, 14, y+5); y+=8;
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(26, 26, 46);
+  doc.text('Cost History (' + exps.length + ' items)', margin, y);
+  y += 7;
 
   if (!exps.length) {
-    doc.setFontSize(9); doc.setTextColor(107,114,128);
-    doc.text('No expenses recorded yet.', 105, y+6, {align:'center'});
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    doc.text('No expenses recorded.', W/2, y + 6, { align:'center' });
   } else {
-    // Table header
-    doc.setFillColor(26,26,46);
-    doc.rect(14,y,182,9,'F');
-    doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.text('#',    17, y+6);
-    doc.text('Description', 25, y+6);
-    doc.text('Type',  88, y+6);
-    doc.text('Qty',  118, y+6, {align:'center'});
-    doc.text('Unit Price', 140, y+6, {align:'center'});
-    doc.text('Total', 168, y+6, {align:'center'});
-    doc.text('Date',  192, y+6, {align:'right'});
+    // header row
+    const cols = { num:margin+2, desc:margin+10, type:margin+88, qty:margin+118, unit:margin+138, total:margin+160, date:margin+196 };
+    const drawTableHeader = (yy) => {
+      doc.setFillColor(26, 26, 46);
+      doc.rect(margin, yy, 182, 9, 'F');
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(7.5);
+      doc.setTextColor(255, 255, 255);
+      doc.text('#',          cols.num,  yy+6);
+      doc.text('Description',cols.desc, yy+6);
+      doc.text('Type',       cols.type, yy+6);
+      doc.text('Qty',        cols.qty,  yy+6, { align:'center' });
+      doc.text('Unit Price', cols.unit, yy+6, { align:'center' });
+      doc.text('Total',      cols.total,yy+6, { align:'center' });
+      doc.text('Date',       cols.date, yy+6, { align:'right' });
+    };
+    drawTableHeader(y);
     y += 11;
 
-    exps.forEach((e,i)=>{
-      if (y > 270) {
+    exps.forEach((e, i) => {
+      if (y > 268) {
         doc.addPage();
         y = 20;
-        // re-draw header on new page
-        doc.setFillColor(26,26,46);
-        doc.rect(14,y,182,9,'F');
-        doc.setTextColor(255,255,255); doc.setFontSize(8); doc.setFont('helvetica','bold');
-        doc.text('#',17,y+6); doc.text('Description',25,y+6);
-        doc.text('Type',88,y+6); doc.text('Qty',118,y+6,{align:'center'});
-        doc.text('Unit Price',140,y+6,{align:'center'}); doc.text('Total',168,y+6,{align:'center'});
-        doc.text('Date',192,y+6,{align:'right'});
-        y+=11;
+        drawTableHeader(y);
+        y += 11;
       }
+      const rowH = 9;
+      doc.setFillColor(i % 2 === 0 ? 248 : 255, i % 2 === 0 ? 249 : 255, i % 2 === 0 ? 251 : 255);
+      doc.rect(margin, y, 182, rowH, 'F');
+      doc.setDrawColor(230, 232, 236);
+      doc.setLineWidth(0.2);
+      doc.line(margin, y+rowH, margin+182, y+rowH);
 
-      // Row bg
-      doc.setFillColor(i%2===0?248:255, i%2===0?249:255, i%2===0?251:255);
-      doc.rect(14,y,182,9,'F');
-      doc.setDrawColor(235,237,240);
-      doc.line(14,y+9,196,y+9);
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(7.5);
+      doc.setTextColor(26, 26, 46);
 
-      doc.setTextColor(26,26,46); doc.setFontSize(8); doc.setFont('helvetica','normal');
-      doc.text(String(i+1), 17, y+6);
+      doc.text(String(i+1), cols.num, y+6);
 
-      const desc = e.desc.length>32 ? e.desc.slice(0,30)+'...' : e.desc;
-      doc.text(desc, 25, y+6);
-      doc.text(typeEN[e.type]||e.type, 88, y+6);
-      doc.text(String(e.qty||1), 118, y+6, {align:'center'});
-      doc.text(pdfAED(e.amount), 140, y+6, {align:'center'});
+      // description - safe ASCII only
+      let desc = e.desc || '';
+      // replace any non-ASCII with '?'
+      desc = desc.replace(/[^\x00-\x7F]/g, '?');
+      if (desc.length > 35) desc = desc.slice(0,33) + '..';
+      doc.text(desc, cols.desc, y+6);
 
-      doc.setFont('helvetica','bold'); doc.setTextColor(229,62,62);
-      doc.text(pdfAED(e.amount*(e.qty||1)), 168, y+6, {align:'center'});
+      doc.text(typeEN[e.type] || e.type, cols.type, y+6);
+      doc.text(String(e.qty || 1), cols.qty, y+6, { align:'center' });
+      doc.text(pdfMoney(e.amount), cols.unit, y+6, { align:'center' });
 
-      doc.setFont('helvetica','normal'); doc.setTextColor(107,114,128);
-      const dateStr = new Date(e.createdAt).toLocaleDateString('en-GB');
-      doc.text(dateStr, 192, y+6, {align:'right'});
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(200, 40, 40);
+      doc.text(pdfMoney(e.amount * (e.qty || 1)), cols.total, y+6, { align:'center' });
 
-      y += 10;
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(130, 130, 140);
+      const dStr = pdfDateStr(e.createdAt).split(' ')[0]; // date only
+      doc.text(dStr, cols.date, y+6, { align:'right' });
+
+      y += rowH + 1;
     });
 
-    // Grand total row
+    // grand total row
     if (y > 272) { doc.addPage(); y = 20; }
-    doc.setFillColor(212,160,23);
-    doc.rect(14,y,182,10,'F');
-    doc.setTextColor(255,255,255); doc.setFont('helvetica','bold'); doc.setFontSize(10);
-    doc.text('GRAND TOTAL', 20, y+7);
-    doc.text(pdfAED(tc), 168, y+7, {align:'center'});
+    doc.setFillColor(212, 160, 23);
+    doc.rect(margin, y, 182, 10, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9);
+    doc.setTextColor(255, 255, 255);
+    doc.text('GRAND TOTAL', margin + 6, y + 7);
+    doc.text(pdfMoney(grand), cols.total, y+7, { align:'center' });
+    y += 14;
   }
 
   // ── NOTES ──
   if (l.notes) {
-    y += 14;
     if (y > 265) { doc.addPage(); y = 20; }
-    doc.setFillColor(253,246,227);
-    doc.roundedRect(14,y,182,14,3,3,'F');
-    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(212,160,23);
-    doc.text('Notes:', 18, y+6);
-    doc.setFont('helvetica','normal'); doc.setTextColor(26,26,46);
-    doc.text(l.notes.length>80?l.notes.slice(0,78)+'...':l.notes, 18, y+11);
+    doc.setFillColor(253, 246, 227);
+    doc.roundedRect(margin, y, 182, 14, 3, 3, 'F');
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(8);
+    doc.setTextColor(180, 120, 0);
+    doc.text('Notes:', margin + 4, y + 6);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(60, 60, 60);
+    let notesTxt = (l.notes || '').replace(/[^\x00-\x7F]/g, '?');
+    if (notesTxt.length > 85) notesTxt = notesTxt.slice(0, 83) + '...';
+    doc.text(notesTxt, margin + 4, y + 11);
   }
 
-  // ── FOOTER ──
-  const pgCount = doc.internal.getNumberOfPages();
-  for (let pg=1; pg<=pgCount; pg++) {
+  // ── FOOTER on all pages ──
+  const totalPages = doc.internal.getNumberOfPages();
+  for (let pg = 1; pg <= totalPages; pg++) {
     doc.setPage(pg);
-    const pgH = doc.internal.pageSize.height;
-    doc.setFillColor(247,248,250);
-    doc.rect(0,pgH-14,210,14,'F');
-    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(107,114,128);
-    doc.text('KULF App  |  ALBASSET LAPTOP  |  Dev: Nour Al-Din', 14, pgH-5);
-    doc.text(`Page ${pg} of ${pgCount}`, 196, pgH-5, {align:'right'});
+    const pH = doc.internal.pageSize.height;
+    doc.setFillColor(247, 248, 250);
+    doc.rect(0, pH-12, W, 12, 'F');
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(150, 155, 165);
+    doc.text('KULF App  |  ALBASSET LAPTOP  |  Dev: Nour Al-Din', margin, pH-4);
+    doc.text('Page ' + pg + ' / ' + totalPages, W-margin, pH-4, { align:'right' });
   }
 
-  const fileName = `KULF_${l.model.replace(/\s+/g,'_')}_${new Date().toISOString().slice(0,10)}.pdf`;
-  doc.save(fileName);
-  setTimeout(()=>showToast('✅ PDF exported successfully'),600);
+  const safeModel = l.model.replace(/[^a-zA-Z0-9_\-]/g, '_');
+  const dateTag   = new Date().toISOString().slice(0,10);
+  doc.save('KULF_' + safeModel + '_' + dateTag + '.pdf');
+  setTimeout(() => showToast('PDF exported successfully'), 500);
 }
 
 // ── UTILS ──
