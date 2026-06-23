@@ -966,17 +966,20 @@ function renderReports() {
 // تحويل المبلغ لنص إنجليزي نظيف للـ PDF
 // ── PDF HELPERS ──
 function pdfMoney(n) {
-  return Number(n || 0).toLocaleString('en-US', {minimumFractionDigits:0, maximumFractionDigits:0}) + ' AED';
+  const num = Number(n || 0);
+  const formatted = num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return formatted + ' AED';
 }
 function pdfDateStr(ts) {
   const d = new Date(ts);
   const dd = String(d.getDate()).padStart(2,'0');
   const mm = String(d.getMonth()+1).padStart(2,'0');
-  const yy = d.getFullYear();
-  let hh = d.getHours(), mn = String(d.getMinutes()).padStart(2,'0');
+  const yy = String(d.getFullYear());
+  let hh = d.getHours();
+  const mn = String(d.getMinutes()).padStart(2,'0');
   const ampm = hh >= 12 ? 'PM' : 'AM';
   hh = hh % 12 || 12;
-  return dd+'/'+mm+'/'+yy+' '+hh+':'+mn+' '+ampm;
+  return dd+'/'+mm+'/'+yy+' '+String(hh)+':'+mn+' '+ampm;
 }
 const typeEN   = { maintenance:'Maintenance', accessories:'Accessories', purchase:'Purchase', other:'Other' };
 const statusEN = { maintenance:'Maintenance', ready:'Ready for Sale', sold:'Sold' };
@@ -1016,10 +1019,15 @@ async function exportPDF(id) {
   doc.text('Report: ' + pdfDateStr(Date.now()), W/2, 32, { align:'center' });
 
   // ── MODEL TITLE ──
+  // اسم الموديل - نزيل الأحرف العربية ونحتفظ باللاتيني
+  function cleanForPDF(str) {
+    return (str || '').replace(/[\u0600-\u06FF]/g, '').replace(/[^\x00-\x7F]/g, '').trim() || str.replace(/[^\x00-\x7F]/g, '[AR]').trim();
+  }
+  const modelPDF = cleanForPDF(l.model) || l.model.replace(/[^\x00-\x7F]/g, '?');
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(17);
   doc.setTextColor(26, 26, 46);
-  doc.text(l.model, W/2, 52, { align:'center' });
+  doc.text(modelPDF || 'Model', W/2, 52, { align:'center' });
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8.5);
